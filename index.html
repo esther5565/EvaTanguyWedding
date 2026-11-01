@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Eva &amp; Tanguy – Girona, 25 September</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300&family=Jost:wght@300;400&display=swap">
+<link rel="preload" as="image" href="photos/01.jpg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="home">
+
+<div class="site" id="site">
+  <div class="bg" aria-hidden="true">
+    <video class="blur" src="media/couple.mp4" poster="media/couple.jpg" muted playsinline preload="auto"></video>
+    <video class="main" src="media/couple.mp4" poster="media/couple.jpg" muted playsinline preload="auto"></video>
+  </div>
+  <header class="top" id="top"></header>
+  <main>
+    <section class="hero">
+      <p class="welcome" id="welcome"></p>
+      <h1>Eva <span>&amp;</span> Tanguy</h1>
+      <p class="where" data-i18n="where">Girona, Spain · September 25th</p>
+      <button class="cue" id="cue" type="button" data-i18n="scroll">Scroll</button>
+    </section>
+  </main>
+  <div class="track" id="track"></div>
+  <div class="wipe" aria-hidden="true"></div>
+</div>
+
+<div class="gate" id="gate">
+  <div class="carousel" aria-hidden="true">
+    <div class="slide"></div><div class="slide"></div><div class="slide"></div><div class="slide"></div><div class="slide"></div><div class="slide"></div>
+  </div>
+  <div class="gate-main">
+    <h1>Eva <span>&amp;</span> Tanguy</h1>
+    <p class="where" data-i18n="where">Girona, Spain · September 25th</p>
+
+    <div class="countdown" role="timer" aria-label="Countdown">
+      <div><b id="cd-d">0</b><small data-i18n="cd.days">Days</small></div>
+      <div><b id="cd-h">00</b><small data-i18n="cd.hours">Hours</small></div>
+      <div><b id="cd-m">00</b><small data-i18n="cd.min">Min</small></div>
+      <div><b id="cd-s">00</b><small data-i18n="cd.sec">Sec</small></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <form id="login" novalidate>
+      <label for="firstname" data-i18n="firstname">Name</label>
+      <input id="firstname" type="text" data-i18n-ph="firstname" placeholder="Name" autocomplete="given-name" required>
+      <label for="surname" data-i18n="surname">Surname</label>
+      <input id="surname" type="text" data-i18n-ph="surname" placeholder="Surname" autocomplete="family-name" required>
+      <p class="error" id="error" role="alert" data-i18n="error" hidden>We can’t find that name. Please use the name written on your invitation.</p>
+      <button type="submit" data-i18n="enter">Enter</button>
+    </form>
+  </div>
+</div>
+
+<script src="js/guests.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

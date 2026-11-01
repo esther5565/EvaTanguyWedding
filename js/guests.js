@@ -1,0 +1,33 @@
+/* ==========================================================
+   DATA FILE – edit this file to manage guests and programs
+   ========================================================== */
+
+/* Wedding date (month is 0-based: 8 = September) */
+const WEDDING = new Date(2027, 8, 25, 0, 0, 0);
+
+/* Language used when a guest has none, or before login */
+const DEFAULT_LANG = "en";
+
+/* One line per guest.
+   lang:    "en" | "es" | "fr"   (add more in js/i18n.js)
+   program: key of a program in PROGRAMS below ("full", "evening", ...) */
+const GUESTS = [
+  { first: "Esther", last: "Berges", lang: "en", program: "full" },
+  // { first: "Name",  last: "Surname", lang: "es", program: "evening" },
+  // { first: "Name",  last: "Surname", lang: "fr", program: "full" },
+];
+
+/* Programs shown on program.html, depending on the invitation.
+   event: key translated in js/i18n.js ("event.<key>")
+   time:  placeholder "--:--" until the real times are decided */
+const PROGRAMS = {
+  full: [
+    { time: "--:--", event: "ceremony" },
+    { time: "--:--", event: "cocktail" },
+    { time: "--:--", event: "dinner" },
+    { time: "--:--", event: "party" },
+  ],
+  evening: [
+    { time: "--:--", event: "party" },
+  ],
+};
