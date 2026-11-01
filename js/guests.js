@@ -12,9 +12,9 @@ const DEFAULT_LANG = "en";
    lang:    "en" | "es" | "fr"   (add more in js/i18n.js)
    program: key of a program in PROGRAMS below ("full", "evening", ...) */
 const GUESTS = [
-  { first: "Esther", last: "Berges", lang: "en", program: "full" },
-  // { first: "Name",  last: "Surname", lang: "es", program: "evening" },
-  // { first: "Name",  last: "Surname", lang: "fr", program: "full" },
+  { first: "Esther", last: "Berges", lang: "en", program: "full", plusOne: true },
+  { first: "Eva",  last: "Berges", lang: "es", program: "evening", plusOne: false },
+  { first: "Tanguy",  last: "Masgnaux", lang: "fr", program: "full", plusOne: true },
 ];
 
 /* Programs shown on program.html, depending on the invitation.
