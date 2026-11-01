@@ -54,6 +54,99 @@
   }
   render();
 
+  /* ---------- RSVP page ---------- */
+  function initRsvp() {
+    const form = $("rsvp-form"); if (!form) return;
+    const thanks = $("rsvp-thanks"), qPlus = $("q-plus"), qNames = $("q-names");
+    const submit = $("rsvp-submit"), err = $("rsvp-error"), first = $("plus-first"), last = $("plus-last");
+    const SAVE = "wedding-rsvp:" + norm(guest.first + " " + guest.last);
+    const s = { attend: "", plus: "" };
+    const endpoint = typeof RSVP_ENDPOINT !== "undefined" ? RSVP_ENDPOINT : "";
+
+    function update() {
+      const canPlus = !!guest.plusOne && s.attend === "yes";
+      qPlus.hidden = !canPlus;
+      qNames.hidden = !(canPlus && s.plus === "yes");
+      const namesOk = first.value.trim() && last.value.trim();
+      const ready = s.attend === "no" ||
+        (s.attend === "yes" && (!guest.plusOne || s.plus === "no" || (s.plus === "yes" && namesOk)));
+      submit.hidden = !ready;
+      form.querySelectorAll(".choice").forEach(b => b.setAttribute("aria-pressed", String(s[b.dataset.q] === b.dataset.value)));
+    }
+
+    function payload() {
+      const coming = s.attend === "yes", bring = coming && !!guest.plusOne && s.plus === "yes";
+      return {
+        first: guest.first, last: guest.last, attending: coming ? "Yes" : "No",
+        program: guest.program || "", lang,
+        plusOneAllowed: guest.plusOne ? "Yes" : "No",
+        plusOneComing: guest.plusOne && coming ? (bring ? "Yes" : "No") : "",
+        plusOneFirst: bring ? first.value.trim() : "", plusOneLast: bring ? last.value.trim() : "",
+      };
+    }
+
+    /* TEST MODE only: a CSV (opens in Excel) so you can see the format */
+    function downloadCsv(d) {
+      const cols = [["Received", new Date().toISOString()], ["Name", d.first], ["Surname", d.last], ["Attending", d.attending],
+        ["Program", d.program], ["Language", d.lang], ["+1 allowed", d.plusOneAllowed], ["Bringing +1", d.plusOneComing],
+        ["+1 name", d.plusOneFirst], ["+1 surname", d.plusOneLast]];
+      const cell = v => '"' + (/^[=+\-@]/.test(v) ? "'" + v : v).replace(/"/g, '""') + '"';
+      const csv = "\ufeff" + cols.map(c => cell(c[0])).join(",") + "\r\n" + cols.map(c => cell(String(c[1]))).join(",") + "\r\n";
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+      a.download = "rsvp-test.csv"; document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+
+    async function send(d) {
+      if (!endpoint) { console.warn("RSVP_ENDPOINT is empty: test mode, nothing was sent."); downloadCsv(d); return; }
+      /* no-cors + plain text = a "simple" request that Google Apps Script accepts from any site */
+      await fetch(endpoint, { method: "POST", mode: "no-cors", body: JSON.stringify(d) });
+    }
+
+    function showThanks(d) {
+      form.hidden = true; thanks.hidden = false;
+      $("thanks-text").textContent = t(d.attending === "Yes" ? "rsvp.thanks.yes" : "rsvp.thanks.no");
+    }
+
+    form.addEventListener("click", e => {
+      const b = e.target.closest(".choice"); if (!b) return;
+      s[b.dataset.q] = b.dataset.value; update();
+    });
+    form.addEventListener("input", update);
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      if (submit.hidden || submit.disabled) return;
+      const d = payload();
+      err.hidden = true; submit.disabled = true; submit.textContent = t("rsvp.sending");
+      try {
+        await send(d);
+        try { localStorage.setItem(SAVE, JSON.stringify(d)); } catch (_) {}
+        showThanks(d);
+      } catch (_) {
+        err.hidden = false;
+      } finally {
+        submit.disabled = false; submit.textContent = t("rsvp.submit");
+      }
+    });
+
+    /* Already answered on this device: show the thanks, with a way to change it */
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(SAVE)); } catch (_) {}
+    if (saved) showThanks(saved);
+    $("rsvp-edit").addEventListener("click", () => {
+      if (saved) {
+        s.attend = saved.attending === "Yes" ? "yes" : "no";
+        s.plus = saved.plusOneComing === "Yes" ? "yes" : saved.plusOneComing === "No" ? "no" : "";
+        first.value = saved.plusOneFirst; last.value = saved.plusOneLast;
+      }
+      thanks.hidden = true; form.hidden = false; update();
+    });
+    update();
+  }
+  if (page === "rsvp") initRsvp();
+
   /* ---------- Landing page only ---------- */
   const gate = $("gate"), site = $("site");
   if (!gate) return;

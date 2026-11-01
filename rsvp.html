@@ -13,6 +13,39 @@
   <h2 data-i18n="nav.rsvp">RSVP</h2>
   <div class="divider"></div>
 
+  <form class="rsvp" id="rsvp-form" novalidate>
+    <fieldset class="q" id="q-attend">
+      <legend data-i18n="rsvp.q1">Will you come to the wedding?</legend>
+      <div class="choices">
+        <button type="button" class="choice" data-q="attend" data-value="yes" aria-pressed="false" data-i18n="rsvp.yes">Yes</button>
+        <button type="button" class="choice" data-q="attend" data-value="no" aria-pressed="false" data-i18n="rsvp.no">No</button>
+      </div>
+    </fieldset>
+
+    <!-- Only shown to guests with plusOne: true (and who answered yes above) -->
+    <fieldset class="q" id="q-plus" hidden>
+      <legend data-i18n="rsvp.q2">Will you bring a +1?</legend>
+      <div class="choices">
+        <button type="button" class="choice" data-q="plus" data-value="yes" aria-pressed="false" data-i18n="rsvp.yes">Yes</button>
+        <button type="button" class="choice" data-q="plus" data-value="no" aria-pressed="false" data-i18n="rsvp.no">No</button>
+      </div>
+    </fieldset>
+
+    <div class="q names" id="q-names" hidden>
+      <label for="plus-first" data-i18n="rsvp.plusFirst">+1 name</label>
+      <input id="plus-first" type="text" maxlength="60" data-i18n-ph="rsvp.plusFirst" placeholder="+1 name" autocomplete="off">
+      <label for="plus-last" data-i18n="rsvp.plusLast">+1 surname</label>
+      <input id="plus-last" type="text" maxlength="60" data-i18n-ph="rsvp.plusLast" placeholder="+1 surname" autocomplete="off">
+    </div>
+
+    <button type="submit" class="submit" id="rsvp-submit" hidden data-i18n="rsvp.submit">Send my answer</button>
+    <p class="error" id="rsvp-error" role="alert" hidden data-i18n="rsvp.error">Something went wrong. Please try again.</p>
+  </form>
+
+  <div class="thanks" id="rsvp-thanks" hidden>
+    <p id="thanks-text"></p>
+    <button type="button" class="link" id="rsvp-edit" data-i18n="rsvp.edit">Change my answer</button>
+  </div>
 </main>
 <script src="js/guests.js"></script>
 <script src="js/i18n.js"></script>

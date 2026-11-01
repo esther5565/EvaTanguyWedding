@@ -5,12 +5,19 @@
 /* Wedding date (month is 0-based: 8 = September) */
 const WEDDING = new Date(2027, 8, 25, 0, 0, 0);
 
+/* Where RSVP answers are sent (a Google Sheet, which opens in Excel).
+   Setup: see tools/rsvp-google-script.gs, then paste the web app URL here.
+   While this is empty the RSVP page runs in TEST MODE: nothing is sent, the
+   browser downloads a small CSV instead. Fill it in before sharing the site. */
+const RSVP_ENDPOINT = "https://script.google.com/macros/s/AKfycbzshOWgkWxIq0aRcgeuPYVnsTK74WE_8Q_4CCJT_RmTqn4RosH2-Lb8YTgbkcsnYZbe/exec";
+
 /* Language used when a guest has none, or before login */
 const DEFAULT_LANG = "en";
 
 /* One line per guest.
    lang:    "en" | "es" | "fr"   (add more in js/i18n.js)
-   program: key of a program in PROGRAMS below ("full", "evening", ...) */
+   program: key of a program in PROGRAMS below ("full", "evening", ...)
+   plusOne: true if the guest may bring a +1 (shows the extra button), otherwise false */
 const GUESTS = [
   { first: "Esther", last: "Berges", lang: "en", program: "full", plusOne: true },
   { first: "Eva",  last: "Berges", lang: "es", program: "evening", plusOne: false },
