@@ -9,7 +9,7 @@ const WEDDING = new Date(2027, 8, 25, 0, 0, 0);
    Setup: see tools/rsvp-google-script.gs, then paste the web app URL here.
    While this is empty the RSVP page runs in TEST MODE: nothing is sent, the
    browser downloads a small CSV instead. Fill it in before sharing the site. */
-const RSVP_ENDPOINT = "https://script.google.com/macros/s/AKfycbzshOWgkWxIq0aRcgeuPYVnsTK74WE_8Q_4CCJT_RmTqn4RosH2-Lb8YTgbkcsnYZbe/exec";
+const RSVP_ENDPOINT = "https://script.google.com/macros/s/AKfycbyMlgm9Kh_5uHV427WRnF8rUlT7tGWoDY1DM8z7SlO4kxdxYZGVNuWPIjUgw97LDZCw/exec";
 
 /* Language used when a guest has none, or before login */
 const DEFAULT_LANG = "en";
