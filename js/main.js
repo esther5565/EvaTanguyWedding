@@ -76,7 +76,7 @@
     videos.forEach(v => { v.currentTime = 0; const p = v.play(); if (p) p.then(() => v.pause()).catch(() => {}); });
   }
   function scrubLoop() {
-    shown += (target - shown) * .18;                 /* easing = smooth, filmic movement */
+    shown += (target - shown) * .28;                 /* easing = smooth, filmic movement */
     if (Math.abs(target - shown) < .001) shown = target;
     videos.forEach(v => {
       const d = v.duration || 5.8;
