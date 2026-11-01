@@ -67,22 +67,36 @@
   }
   tick(); setInterval(tick, 1000);
 
-  /* Background video: paused, it only moves while the page is scrolled */
-  const videos = [...document.querySelectorAll(".bg video")];
-  const END_AT = .9;            /* video reaches its last frame at 90% of the scroll */
+  /* Background: a sequence of pictures drawn on a canvas, driven by scroll.
+     (Much smoother than seeking inside a video file, in both directions.) */
+  const bg = $("bg"), cv = $("cv-main"), cb = $("cv-blur");
+  const N = +bg.dataset.frames, END_AT = .9;     /* last frame reached at 90% of the scroll */
+  const ctx = cv.getContext("2d"), ctxB = cb.getContext("2d");
+  const frames = [];
   let target = 0, shown = 0, raf = 0;
 
-  function prime() {            /* makes the browser load frames so seeking works everywhere (iOS) */
-    videos.forEach(v => { v.currentTime = 0; const p = v.play(); if (p) p.then(() => v.pause()).catch(() => {}); });
+  function draw() {
+    const pos = shown * (N - 1), i = Math.floor(pos), f = pos - i;
+    const a = frames[i], b = frames[Math.min(N - 1, i + 1)];
+    if (!a || !a.complete || !a.naturalWidth) return;
+    if (cv.width !== a.naturalWidth) { cv.width = a.naturalWidth; cv.height = a.naturalHeight; }
+    ctx.globalAlpha = 1; ctx.drawImage(a, 0, 0);
+    if (f > .02 && b.complete && b.naturalWidth) {   /* blend with the next frame = sub-frame smoothness */
+      ctx.globalAlpha = f; ctx.drawImage(b, 0, 0); ctx.globalAlpha = 1;
+    }
+    ctxB.drawImage(cv, 0, 0, cb.width, cb.height);
   }
+  for (let i = 0; i < N; i++) {
+    const im = new Image();
+    im.src = `media/frames/${String(i + 1).padStart(3, "0")}.webp`;
+    im.onload = () => { if (i === 0 || i === Math.round(shown * (N - 1))) draw(); };
+    frames.push(im);
+  }
+
   function scrubLoop() {
-    shown += (target - shown) * .28;                 /* easing = smooth, filmic movement */
-    if (Math.abs(target - shown) < .001) shown = target;
-    videos.forEach(v => {
-      const d = v.duration || 5.8;
-      const time = Math.min(d - .05, shown * d);
-      if (Math.abs(v.currentTime - time) > .01) v.currentTime = time;
-    });
+    shown += (target - shown) * .28;                 /* easing */
+    if (Math.abs(target - shown) < .0005) shown = target;
+    draw();
     raf = shown === target ? 0 : requestAnimationFrame(scrubLoop);
   }
   function setProgress(p) {
@@ -94,7 +108,6 @@
     lang = I18N[guest.lang] ? guest.lang : DEFAULT_LANG;
     render();
     site.classList.add("on");
-    prime();
     if (!animate) {
       site.classList.add("instant", "reveal");
       gate.hidden = true; body.classList.add("entered"); return;
@@ -133,7 +146,7 @@
     if (p >= .985 && !leaving) {
       leaving = true;
       site.classList.add("leaving");
-      setTimeout(() => { location.href = "rsvp.html"; }, 700);
+      setTimeout(() => { location.href = "rsvp.html"; }, 500);
     }
   }
   addEventListener("scroll", onScroll, { passive: true });
