@@ -48,6 +48,7 @@
     document.documentElement.lang = lang;
     document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
     document.querySelectorAll("[data-i18n-ph]").forEach(el => el.placeholder = t(el.dataset.i18nPh));
+    document.querySelectorAll("[data-i18n-aria]").forEach(el => el.setAttribute("aria-label", t(el.dataset.i18nAria)));
     renderHeader(); renderProgram();
     if (page !== "home") document.title = t("nav." + page) + " – Eva & Tanguy";
     if (guest && $("welcome")) $("welcome").textContent = t("welcome") + ", " + guest.first;
@@ -146,6 +147,251 @@
     update();
   }
   if (page === "rsvp") initRsvp();
+
+  /* ---------- ZIP (store only, no compression: photos are already compressed) ---------- */
+  const CRC_TABLE = (() => {
+    const tb = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; tb[n] = c >>> 0; }
+    return tb;
+  })();
+  function crc32(u8) { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function makeZip(entries) {                      /* entries: [{ name, data: Uint8Array }] */
+    const enc = new TextEncoder(), parts = [], central = [], d = new Date();
+    const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+    const date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+    let offset = 0, cdSize = 0;
+    for (const e of entries) {
+      const name = enc.encode(e.name), crc = crc32(e.data), size = e.data.length;
+      const lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true);
+      lh.setUint16(10, time, true); lh.setUint16(12, date, true); lh.setUint32(14, crc, true);
+      lh.setUint32(18, size, true); lh.setUint32(22, size, true); lh.setUint16(26, name.length, true);
+      parts.push(lh.buffer, name, e.data);
+      const ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true);
+      ch.setUint16(12, time, true); ch.setUint16(14, date, true); ch.setUint32(16, crc, true);
+      ch.setUint32(20, size, true); ch.setUint32(24, size, true); ch.setUint16(28, name.length, true); ch.setUint32(42, offset, true);
+      central.push(ch.buffer, name);
+      offset += 30 + name.length + size; cdSize += 46 + name.length;
+    }
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(8, entries.length, true); end.setUint16(10, entries.length, true);
+    end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+    return new Blob([...parts, ...central, end.buffer], { type: "application/zip" });
+  }
+  function saveBlob(blob, name) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+
+  /* ---------- Moments page ---------- */
+  function initMoments() {
+    const grid = $("moments-grid"); if (!grid) return;
+    const endpoint = typeof MOMENTS_ENDPOINT !== "undefined" ? MOMENTS_ENDPOINT : "";
+    const fab = $("moments-add"), input = $("moments-file"), toast = $("moments-status");
+    const lb = $("lightbox"), lbImg = $("lb-img"), lbCap = $("lb-cap"), shareBtn = $("lb-share"), dlAll = $("moments-dl");
+    const canShareFiles = (() => { try { return !!(navigator.canShare && navigator.canShare({ files: [new File([""], "a.jpg", { type: "image/jpeg" })] })); } catch (_) { return false; } })();
+    const MAX_SIDE = 1800, MAX_FILES = 10;
+    const original = id => "https://lh3.googleusercontent.com/d/" + encodeURIComponent(id) + "=s2400";
+    const thumb = (id, w) => "https://drive.google.com/thumbnail?id=" + encodeURIComponent(id) + "&sz=w" + w;
+    let server = [], local = [], shown = [], folderUrl = "", loaded = false, failed = false, busy = false;
+    let lastKey = "", toastTimer = 0, idx = 0, openFrom = null;
+
+    const caption = p => p.by ? t("moments.by").replace("{name}", p.by) : t("moments.photo");
+    const syncFab = () => { fab.disabled = busy || (!!endpoint && !loaded); };   /* live mode: wait until the script answers */
+
+    /* Photos from Drive + my own uploads that Drive hasn't listed yet */
+    function items() {
+      const names = new Set(server.map(p => p.name));
+      const mine = local.filter(p => !names.has(p.name)).map(p => ({ src: p.url, full: p.url, dl: p.url, blob: p.blob, name: p.name, by: p.by }));
+      return mine.concat(server.map(p => ({ id: p.id, name: p.name, src: thumb(p.id, 600), full: thumb(p.id, 1600), dl: original(p.id), by: p.by })));
+    }
+
+    function render() {
+      const list = items(); shown = list;
+      dlAll.hidden = list.length === 0;
+      const skeleton = !!endpoint && !loaded && !failed;
+      const k = (skeleton ? "S" : "L") + list.map(p => p.src).join("|");
+      $("moments-empty").hidden = !(list.length === 0 && !skeleton && (loaded || !endpoint));
+      if (k === lastKey) return;
+      lastKey = k;
+      grid.replaceChildren();
+      if (skeleton) for (let i = 0; i < 9; i++) { const d = document.createElement("div"); d.className = "tile skel"; grid.append(d); }
+      list.forEach((p, i) => {
+        const b = document.createElement("button"); b.type = "button"; b.className = "tile"; b.setAttribute("aria-label", caption(p));
+        const im = new Image(); im.src = p.src; im.alt = ""; im.loading = "lazy"; im.decoding = "async";
+        b.append(im); b.addEventListener("click", () => open(i)); grid.append(b);
+      });
+    }
+
+    /* The list is read with JSONP (a <script> tag), which works from any website */
+    function jsonp(url, query, timeout) {
+      return new Promise((resolve, reject) => {
+        const cb = "__moments" + Date.now() + Math.floor(Math.random() * 1e6), s = document.createElement("script");
+        let timer;
+        const done = () => { clearTimeout(timer); delete window[cb]; s.remove(); };
+        timer = setTimeout(() => { done(); reject(new Error("timeout")); }, timeout || 15000);
+        window[cb] = data => { done(); resolve(data); };
+        s.onerror = () => { done(); reject(new Error("network")); };
+        s.src = url + (url.includes("?") ? "&" : "?") + query + "&callback=" + cb;
+        document.head.append(s);
+      });
+    }
+
+    async function load() {
+      if (!endpoint) { loaded = true; render(); syncFab(); return; }
+      try {
+        const r = await jsonp(endpoint, "action=photos");
+        if (!r || !r.ok) throw new Error(r && r.error);
+        server = r.photos || []; folderUrl = r.folder || ""; loaded = true; failed = false;
+      } catch (_) { failed = true; }
+      $("moments-loaderr").hidden = !(failed && !loaded);
+      render(); syncFab();
+    }
+
+    /* ----- Lightbox ----- */
+    function show(i) {
+      if (!shown.length) return close();
+      idx = (i + shown.length) % shown.length;
+      const p = shown[idx];
+      lbImg.src = p.full; lbImg.alt = caption(p); lbCap.textContent = p.by ? caption(p) : "";
+      $("lb-prev").hidden = $("lb-next").hidden = shown.length < 2;
+      shareBtn.disabled = false;
+    }
+    function open(i) { openFrom = document.activeElement; show(i); lb.hidden = false; body.classList.add("lb-open"); $("lb-close").focus(); }
+    function close() { lb.hidden = true; lbImg.removeAttribute("src"); body.classList.remove("lb-open"); if (openFrom && openFrom.focus) openFrom.focus(); }
+    $("lb-close").addEventListener("click", close);
+    $("lb-prev").addEventListener("click", () => show(idx - 1));
+    $("lb-next").addEventListener("click", () => show(idx + 1));
+    lb.addEventListener("click", e => { if (e.target === lb) close(); });
+    document.addEventListener("keydown", e => {
+      if (lb.hidden) return;
+      if (e.key === "Escape") close(); else if (e.key === "ArrowLeft") show(idx - 1); else if (e.key === "ArrowRight") show(idx + 1);
+    });
+    let x0 = null;
+    lb.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, { passive: true });
+    lb.addEventListener("touchend", e => {
+      if (x0 == null) return;
+      const dx = e.changedTouches[0].clientX - x0; x0 = null;
+      if (Math.abs(dx) > 50) show(idx + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+
+    /* ----- Upload ----- */
+    function status(msg, kind, ms, link) {
+      clearTimeout(toastTimer);
+      toast.textContent = msg; toast.className = "toast" + (kind ? " " + kind : ""); toast.hidden = false;
+      if (link) { const a = document.createElement("a"); a.href = link.href; a.target = "_blank"; a.rel = "noopener"; a.textContent = link.text; toast.append(" ", a); }
+      if (ms) toastTimer = setTimeout(() => { toast.hidden = true; }, ms);
+    }
+
+    /* Shrinks the photo (faster upload, and removes hidden data such as GPS location) */
+    async function resize(file) {
+      let img;
+      try { img = await createImageBitmap(file, { imageOrientation: "from-image" }); }
+      catch (_) {
+        img = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = URL.createObjectURL(file); });
+      }
+      const w = img.width || img.naturalWidth, h = img.height || img.naturalHeight, k = Math.min(1, MAX_SIDE / Math.max(w, h));
+      const cv = document.createElement("canvas"); cv.width = Math.round(w * k); cv.height = Math.round(h * k);
+      cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+      if (img.close) img.close();
+      const blob = await new Promise(r => cv.toBlob(r, "image/jpeg", .82));
+      if (!blob) throw new Error("encode");
+      return blob;
+    }
+    const toBase64 = blob => new Promise((res, rej) => {
+      const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1]); fr.onerror = rej; fr.readAsDataURL(blob);
+    });
+    async function send(d) {
+      if (!endpoint) return;                                  /* test mode: nothing leaves the browser */
+      await fetch(endpoint, { method: "POST", mode: "no-cors", body: JSON.stringify(d) });
+    }
+
+    async function upload(files) {
+      files = [...files].filter(f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)).slice(0, MAX_FILES);
+      if (!files.length) return;
+      busy = true; syncFab();
+      let ok = 0, fail = 0;
+      for (let i = 0; i < files.length; i++) {
+        status(t("moments.uploading").replace("{n}", i + 1).replace("{total}", files.length));
+        try {
+          const blob = await resize(files[i]);
+          const name = Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".jpg";
+          await send({ type: "photo", name, mime: "image/jpeg", data: await toBase64(blob), who: guest.first + " " + guest.last });
+          local.unshift({ name, blob, url: URL.createObjectURL(blob), by: guest.first });
+          ok++; render();
+        } catch (_) { fail++; }
+      }
+      busy = false; syncFab();
+      status(fail ? t("moments.error") : t("moments.done"), fail ? "err" : "", 6000);
+      if (ok && endpoint) [3000, 8000, 15000].forEach(ms => setTimeout(load, ms));   /* pick up the new photos from Drive */
+    }
+
+
+    /* ----- Share / download one photo ----- */
+    async function photoBlob(p) {
+      if (p.blob) return p.blob;                                  /* my own upload: already here */
+      const r = await jsonp(endpoint, "action=photo&id=" + encodeURIComponent(p.id), 40000);
+      if (!r || !r.ok) throw new Error(r && r.error);
+      const bin = atob(r.data), u8 = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      return new Blob([u8], { type: r.mime || "image/jpeg" });
+    }
+    async function shareCurrent() {
+      const p = shown[idx]; if (!p || shareBtn.disabled) return;
+      shareBtn.disabled = true;
+      try {
+        const blob = await photoBlob(p);
+        const name = p.name && /\.\w+$/.test(p.name) ? p.name : "moment-" + Date.now() + ".jpg";
+        const file = new File([blob], name, { type: blob.type || "image/jpeg" });
+        if (canShareFiles && navigator.canShare({ files: [file] })) await navigator.share({ files: [file] });   /* phones: "Save image", WhatsApp... */
+        else saveBlob(blob, name);                                                                              /* computers: straight to Downloads */
+      } catch (err) {
+        if (err && err.name === "AbortError") { /* closed the share sheet: nothing to do */ }
+        else if (p.id) { const a = document.createElement("a"); a.href = "https://drive.google.com/uc?export=download&id=" + encodeURIComponent(p.id); document.body.append(a); a.click(); a.remove(); }
+        else status(t("moments.photoerror"), "err", 5000);
+      } finally { shareBtn.disabled = false; }
+    }
+    shareBtn.addEventListener("click", shareCurrent);
+
+    /* ----- Download everything as one ZIP ----- */
+    async function downloadAll() {
+      const list = shown.slice().reverse();                       /* oldest first: 001 is the first photo of the day */
+      if (!list.length || dlAll.disabled) return;
+      dlAll.disabled = true;
+      const entries = []; let done = 0, next = 0;
+      const get = async url => { for (let tries = 0; ; tries++) { try { const r = await fetch(url); if (!r.ok) throw new Error("http"); return new Uint8Array(await r.arrayBuffer()); } catch (e) { if (tries) throw e; } } };
+      const worker = async () => {
+        while (next < list.length) {
+          const i = next++, p = list[i];
+          entries[i] = { name: String(i + 1).padStart(3, "0") + (p.by ? "-" + p.by.replace(/[^\w-]/g, "") : "") + ".jpg", data: await get(p.dl) };
+          status(t("moments.preparing").replace("{n}", ++done).replace("{total}", list.length));
+        }
+      };
+      try {
+        await Promise.all([worker(), worker(), worker(), worker()]);
+        saveBlob(makeZip(entries), "eva-tanguy-moments.zip");
+        status(t("moments.zipdone"), "", 5000);
+      } catch (_) {
+        /* The browser may not be allowed to read the photos directly: send them to the Drive folder instead */
+        status(t("moments.zipfallback"), "err", 15000, folderUrl ? { href: folderUrl, text: t("moments.openfolder") } : null);
+      } finally { dlAll.disabled = false; }
+    }
+    dlAll.addEventListener("click", downloadAll);
+    $("ic-share").hidden = !canShareFiles; $("ic-dl").hidden = canShareFiles;
+    shareBtn.setAttribute("aria-label", t(canShareFiles ? "moments.share" : "moments.download"));
+
+    fab.addEventListener("click", () => input.click());
+    input.addEventListener("change", () => { const f = input.files; upload(f).finally(() => { input.value = ""; }); });
+
+    $("moments-note").hidden = !!endpoint;
+    syncFab(); render(); load();
+    setInterval(() => { if (!document.hidden && lb.hidden && !busy) load(); }, 45000);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden && lb.hidden && !busy) load(); });
+  }
+  if (page === "moments") initMoments();
 
   /* ---------- Landing page only ---------- */
   const gate = $("gate"), site = $("site");
