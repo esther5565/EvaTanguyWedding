@@ -11,6 +11,8 @@ const WEDDING = new Date(2027, 8, 25, 0, 0, 0);
    browser downloads a small CSV instead. Fill it in before sharing the site. */
 const RSVP_ENDPOINT = "https://script.google.com/macros/s/AKfycbyMlgm9Kh_5uHV427WRnF8rUlT7tGWoDY1DM8z7SlO4kxdxYZGVNuWPIjUgw97LDZCw/exec";
 
+const MOMENTS_ENDPOINT = RSVP_ENDPOINT;
+
 /* Language used when a guest has none, or before login */
 const DEFAULT_LANG = "en";
 
