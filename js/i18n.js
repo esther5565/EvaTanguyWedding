@@ -1,7 +1,7 @@
 /* Translations. To add a language, copy a block and use its code in guests.js */
 const I18N = {
   en: {
-    "nav.rsvp": "RSVP", "nav.program": "Program", "nav.qa": "QA", "nav.moments": "Moments", "nav.about-us": "About us",
+    "nav.rsvp": "RSVP", "nav.program": "Program", "nav.qa": "FAQ", "nav.moments": "Moments", "nav.about-us": "About us",
     "where": "Girona, Spain · September 25th",
     "welcome": "Welcome", "scroll": "Scroll",
     "cd.days": "Days", "cd.hours": "Hours", "cd.min": "Min", "cd.sec": "Sec",
@@ -28,9 +28,10 @@ const I18N = {
     "moments.preparing": "Preparing photos {n} of {total}…", "moments.zipdone": "Your download is ready.",
     "moments.zipfallback": "We couldn’t prepare the download here.", "moments.openfolder": "Open the Drive folder",
     "moments.photoerror": "We couldn’t get this photo. Please try again.",
+    "faq.topics": "Topics",
   },
   es: {
-    "nav.rsvp": "RSVP", "nav.program": "Programa", "nav.qa": "Preguntas", "nav.moments": "Momentos", "nav.about-us": "Sobre nosotros",
+    "nav.rsvp": "RSVP", "nav.program": "Programa", "nav.qa": "Preguntas frecuentes", "nav.moments": "Momentos", "nav.about-us": "Sobre nosotros",
     "where": "Girona, España · 25 de septiembre",
     "welcome": "Hola", "scroll": "Desliza",
     "cd.days": "Días", "cd.hours": "Horas", "cd.min": "Min", "cd.sec": "Seg",
@@ -57,9 +58,10 @@ const I18N = {
     "moments.preparing": "Preparando fotos {n} de {total}…", "moments.zipdone": "Tu descarga está lista.",
     "moments.zipfallback": "No pudimos preparar la descarga aquí.", "moments.openfolder": "Abrir la carpeta de Drive",
     "moments.photoerror": "No pudimos obtener esta foto. Inténtalo de nuevo.",
+    "faq.topics": "Temas",
   },
   fr: {
-    "nav.rsvp": "RSVP", "nav.program": "Programme", "nav.qa": "Questions", "nav.moments": "Moments", "nav.about-us": "À propos de nous",
+    "nav.rsvp": "RSVP", "nav.program": "Programme", "nav.qa": "FAQ", "nav.moments": "Moments", "nav.about-us": "À propos de nous",
     "where": "Girona, Espagne · 25 septembre",
     "welcome": "Bienvenue", "scroll": "Faites défiler",
     "cd.days": "Jours", "cd.hours": "Heures", "cd.min": "Min", "cd.sec": "Sec",
@@ -86,5 +88,6 @@ const I18N = {
     "moments.preparing": "Préparation des photos {n} sur {total}…", "moments.zipdone": "Votre téléchargement est prêt.",
     "moments.zipfallback": "Nous n’avons pas pu préparer le téléchargement ici.", "moments.openfolder": "Ouvrir le dossier Drive",
     "moments.photoerror": "Nous n’avons pas pu récupérer cette photo. Veuillez réessayer.",
+    "faq.topics": "Thèmes",
   },
 };

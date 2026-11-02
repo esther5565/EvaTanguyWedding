@@ -242,6 +242,30 @@ nav a[aria-current] { border-color: var(--accent); opacity: 1; }
 body.lb-open { overflow: hidden; }
 @media (max-width: 640px) { .lightbox { padding-left: .5rem; padding-right: .5rem; } .lb-prev, .lb-next { top: auto; bottom: calc(.8rem + env(safe-area-inset-bottom, 0px)); translate: 0 0; } }
 
+/* FAQ: the layout reacts to the width of the FAQ block itself (container query),
+   so it also stacks properly in a narrow desktop window */
+.faq { container-type: inline-size; width: min(100%, 980px); margin: 2.5rem auto 0; text-align: left; }
+.faq-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: .3rem 2rem; margin-bottom: 2.5rem; }
+.faq-tab, .faq-tab:hover {
+  margin: 0; padding: .6rem 0; background: none; color: var(--text); border: 0; border-bottom: 1px solid transparent; border-radius: 0;
+  transform: none; font-size: .75rem; letter-spacing: .24em; opacity: .6; transition: opacity .2s, color .2s, border-color .2s;
+}
+.faq-tab:hover { opacity: 1; color: var(--accent); }
+.faq-tab[aria-selected="true"] { opacity: 1; border-bottom-color: var(--accent); }
+.faq-tab:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
+.faq-panel.in { animation: pagein .6s cubic-bezier(.16, .8, .2, 1) both; }
+.faq-row { display: grid; gap: .9rem; padding: 1.8rem 0; border-top: 1px solid rgba(255, 250, 243, .18); }
+.faq-row:last-child { border-bottom: 1px solid rgba(255, 250, 243, .18); }
+.faq-q { margin: 0; font-size: .78rem; font-weight: 400; line-height: 1.7; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); }
+.faq-a { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.35rem; line-height: 1.5; overflow-wrap: anywhere; }
+.faq-a p { margin: 0 0 .8rem; }
+.faq-a p:last-child { margin-bottom: 0; }
+.faq-a a { color: var(--accent); text-underline-offset: 3px; }
+@container (min-width: 640px) {
+  .faq-row { grid-template-columns: minmax(180px, 32%) 1fr; gap: 3rem; padding: 2.2rem 0; }
+  .faq-q { padding-top: .45rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .slide, .cue::after { animation: none; }
   .slide:nth-child(1) { opacity: 1; }

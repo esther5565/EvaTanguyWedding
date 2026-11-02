@@ -393,6 +393,68 @@
   }
   if (page === "moments") initMoments();
 
+  /* ---------- FAQ page ---------- */
+  function initFaq() {
+    const tabs = $("faq-tabs"), panel = $("faq-panel");
+    if (!tabs || typeof FAQ === "undefined") return;
+    const pick = o => (o && (o[lang] || o[DEFAULT_LANG])) || "";
+    const topics = FAQ.map(tp => ({
+      id: tp.id, title: pick(tp.title),
+      items: tp.items.filter(it => !it.programs || it.programs.includes(guest.program)),   /* optional per-invitation questions */
+    })).filter(tp => tp.items.length);
+    if (!topics.length) return;
+
+    /* Text with [label](https://link) support, built with DOM nodes (nothing typed here can inject HTML) */
+    function richText(el, text) {
+      String(text).split(/\n+/).forEach(line => {
+        const p = document.createElement("p"), re = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+        let last = 0, m;
+        while ((m = re.exec(line))) {
+          p.append(line.slice(last, m.index));
+          const a = document.createElement("a"); a.href = m[2]; a.target = "_blank"; a.rel = "noopener"; a.textContent = m[1];
+          p.append(a); last = re.lastIndex;
+        }
+        p.append(line.slice(last)); el.append(p);
+      });
+    }
+
+    function show(id) {
+      const tp = topics.find(x => x.id === id) || topics[0];
+      tabs.querySelectorAll("[role=tab]").forEach(b => {
+        const on = b.dataset.id === tp.id;
+        b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1;
+      });
+      panel.setAttribute("aria-labelledby", "tab-" + tp.id);
+      panel.replaceChildren();
+      tp.items.forEach(it => {
+        const row = document.createElement("div"), q = document.createElement("h3"), a = document.createElement("div");
+        row.className = "faq-row"; q.className = "faq-q"; a.className = "faq-a";
+        q.textContent = pick(it.q); richText(a, pick(it.a));
+        row.append(q, a); panel.append(row);
+      });
+      panel.classList.remove("in"); void panel.offsetWidth; panel.classList.add("in");
+    }
+
+    topics.forEach(tp => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "faq-tab"; b.id = "tab-" + tp.id; b.dataset.id = tp.id;
+      b.setAttribute("role", "tab"); b.setAttribute("aria-controls", "faq-panel"); b.textContent = tp.title;
+      b.addEventListener("click", () => { history.replaceState(null, "", "#" + tp.id); show(tp.id); });
+      tabs.append(b);
+    });
+    tabs.addEventListener("keydown", e => {                       /* arrow keys move between topics */
+      const all = [...tabs.querySelectorAll("[role=tab]")], i = all.indexOf(document.activeElement);
+      if (i < 0) return;
+      const to = e.key === "ArrowRight" ? (i + 1) % all.length : e.key === "ArrowLeft" ? (i - 1 + all.length) % all.length
+               : e.key === "Home" ? 0 : e.key === "End" ? all.length - 1 : -1;
+      if (to < 0) return;
+      e.preventDefault(); all[to].focus(); all[to].click();
+    });
+    addEventListener("hashchange", () => show(location.hash.slice(1)));
+    show(location.hash.slice(1));                                  /* qa.html#gifts opens the Gifts topic */
+  }
+  if (page === "qa") initFaq();
+
   /* ---------- Landing page only ---------- */
   const gate = $("gate"), site = $("site");
   if (!gate) return;
