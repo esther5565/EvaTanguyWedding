@@ -387,10 +387,8 @@
     $("ic-share").hidden = !canShareFiles; $("ic-dl").hidden = canShareFiles;
     shareBtn.setAttribute("aria-label", t(canShareFiles ? "moments.share" : "moments.download"));
 
-    fab.addEventListener("click", () => {
-      status(t("moments.limit").replace("{max}", MAX_FILES), "", 6000);   /* the limit, shown as the picker opens */
-      input.click();
-    });
+    fab.addEventListener("click", () => input.click());
+    $("moments-hint").textContent = t("moments.limit").replace("{max}", MAX_FILES);   /* always visible under the button */
     input.addEventListener("change", () => { const f = input.files; upload(f).finally(() => { input.value = ""; }); });
 
     $("moments-note").hidden = !!endpoint;

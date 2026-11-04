@@ -189,7 +189,7 @@ nav a[aria-current] { border-color: var(--accent); opacity: 1; }
 .link:hover { background: none; }
 
 /* MOMENTS (photo gallery) */
-.page.wide { padding-left: .5rem; padding-right: .5rem; padding-bottom: 9rem; }
+.page.wide { padding-left: .5rem; padding-right: .5rem; padding-bottom: 11.5rem; }
 .note { margin: 1.5rem auto; max-width: 460px; font-size: .95rem; opacity: .85; }
 .note.err { color: #ffd6c9; opacity: 1; }
 .moments { width: min(100%, 935px); margin: 1.5rem auto 0; }
@@ -204,7 +204,7 @@ nav a[aria-current] { border-color: var(--accent); opacity: 1; }
 @keyframes pulse { 50% { opacity: .5; } }
 
 .fab {
-  position: fixed; left: 50%; bottom: calc(1.4rem + env(safe-area-inset-bottom, 0px)); translate: -50% 0; z-index: 12;
+  position: fixed; left: 50%; bottom: calc(3.2rem + env(safe-area-inset-bottom, 0px)); translate: -50% 0; z-index: 12;
   width: 72px; height: 72px; margin: 0; padding: 0; border-radius: 50%;
   background: var(--text); box-shadow: 0 8px 30px rgba(0, 0, 0, .5); transition: transform .2s, background .2s, opacity .2s;
 }
@@ -213,8 +213,14 @@ nav a[aria-current] { border-color: var(--accent); opacity: 1; }
 .fab::after { width: 3px; height: 28px; }
 .fab:hover { transform: scale(1.06); }
 .fab:disabled { opacity: .45; cursor: default; transform: none; }
+.fab-hint {
+  position: fixed; left: 50%; bottom: calc(.6rem + env(safe-area-inset-bottom, 0px)); translate: -50% 0; z-index: 12;
+  width: max-content; max-width: 92vw; margin: 0; padding: .35rem .9rem; text-align: center;
+  font-size: .7rem; line-height: 1.4; letter-spacing: .08em; text-shadow: none;
+  background: rgba(15, 11, 8, .72); border-radius: 14px; pointer-events: none;
+}
 .toast {
-  position: fixed; left: 50%; bottom: calc(6.4rem + env(safe-area-inset-bottom, 0px)); translate: -50% 0; z-index: 40;
+  position: fixed; left: 50%; bottom: calc(8.6rem + env(safe-area-inset-bottom, 0px)); translate: -50% 0; z-index: 40;
   width: max-content; max-width: min(92vw, 420px); padding: .8rem 1.2rem; text-align: center; font-size: .9rem;
   background: rgba(15, 11, 8, .94); border: 1px solid var(--field-border); border-radius: 2px;
 }
