@@ -310,7 +310,9 @@
     }
 
     async function upload(files) {
-      files = [...files].filter(f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)).slice(0, MAX_FILES);
+      const images = [...files].filter(f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name));
+      files = images.slice(0, MAX_FILES);
+      const skipped = images.length - files.length;              /* picked more than the limit */
       if (!files.length) return;
       busy = true; syncFab();
       let ok = 0, fail = 0;
@@ -325,7 +327,9 @@
         } catch (_) { fail++; }
       }
       busy = false; syncFab();
-      status(fail ? t("moments.error") : t("moments.done"), fail ? "err" : "", 6000);
+      if (fail) status(t("moments.error"), "err", 6000);
+      else if (skipped) status(t("moments.limitLeft").replace("{max}", MAX_FILES).replace("{n}", skipped), "", 10000);   /* say what was left out */
+      else status(t("moments.done"), "", 6000);
       if (ok && endpoint) [3000, 8000, 15000].forEach(ms => setTimeout(load, ms));   /* pick up the new photos from Drive */
     }
 
@@ -383,7 +387,10 @@
     $("ic-share").hidden = !canShareFiles; $("ic-dl").hidden = canShareFiles;
     shareBtn.setAttribute("aria-label", t(canShareFiles ? "moments.share" : "moments.download"));
 
-    fab.addEventListener("click", () => input.click());
+    fab.addEventListener("click", () => {
+      status(t("moments.limit").replace("{max}", MAX_FILES), "", 6000);   /* the limit, shown as the picker opens */
+      input.click();
+    });
     input.addEventListener("change", () => { const f = input.files; upload(f).finally(() => { input.value = ""; }); });
 
     $("moments-note").hidden = !!endpoint;

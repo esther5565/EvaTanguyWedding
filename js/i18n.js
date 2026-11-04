@@ -28,6 +28,8 @@ const I18N = {
     "moments.preparing": "Preparing photos {n} of {total}…", "moments.zipdone": "Your download is ready.",
     "moments.zipfallback": "We couldn’t prepare the download here.", "moments.openfolder": "Open the Drive folder",
     "moments.photoerror": "We couldn’t get this photo. Please try again.",
+    "moments.limit": "You can add up to {max} photos at a time.",
+    "moments.limitLeft": "Thank you! Only {max} photos can be added at a time. Photos not added: {n}. Please select them again.",
     "faq.topics": "Topics",
   },
   es: {
@@ -58,6 +60,8 @@ const I18N = {
     "moments.preparing": "Preparando fotos {n} de {total}…", "moments.zipdone": "Tu descarga está lista.",
     "moments.zipfallback": "No pudimos preparar la descarga aquí.", "moments.openfolder": "Abrir la carpeta de Drive",
     "moments.photoerror": "No pudimos obtener esta foto. Inténtalo de nuevo.",
+    "moments.limit": "Puedes añadir hasta {max} fotos a la vez.",
+    "moments.limitLeft": "¡Gracias! Solo se pueden añadir {max} fotos a la vez. Fotos sin añadir: {n}. Vuelve a seleccionarlas.",
     "faq.topics": "Temas",
   },
   fr: {
@@ -88,6 +92,8 @@ const I18N = {
     "moments.preparing": "Préparation des photos {n} sur {total}…", "moments.zipdone": "Votre téléchargement est prêt.",
     "moments.zipfallback": "Nous n’avons pas pu préparer le téléchargement ici.", "moments.openfolder": "Ouvrir le dossier Drive",
     "moments.photoerror": "Nous n’avons pas pu récupérer cette photo. Veuillez réessayer.",
+    "moments.limit": "Vous pouvez ajouter jusqu’à {max} photos à la fois.",
+    "moments.limitLeft": "Merci\u00a0! Seules {max} photos peuvent être ajoutées à la fois. Photos non ajoutées\u00a0: {n}. Veuillez les sélectionner à nouveau.",
     "faq.topics": "Thèmes",
   },
 };
