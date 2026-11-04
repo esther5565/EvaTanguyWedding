@@ -17,7 +17,7 @@ const VENUE = {
    Setup: see tools/rsvp-google-script.gs, then paste the web app URL here.
    While this is empty the RSVP page runs in TEST MODE: nothing is sent, the
    browser downloads a small CSV instead. Fill it in before sharing the site. */
-const RSVP_ENDPOINT = "";
+const RSVP_ENDPOINT = "https://script.google.com/macros/s/AKfycbyMlgm9Kh_5uHV427WRnF8rUlT7tGWoDY1DM8z7SlO4kxdxYZGVNuWPIjUgw97LDZCw/exec";
 
 /* Moments (photo gallery + uploads) uses the same Google script, so the same URL.
    Only change this if you ever run photos from a separate script. */
@@ -32,8 +32,8 @@ const DEFAULT_LANG = "en";
    plusOne: true if the guest may bring a +1 (shows the extra button), otherwise false */
 const GUESTS = [
   { first: "Esther", last: "Berges", lang: "en", program: "full", plusOne: true },
-  // { first: "Name",  last: "Surname", lang: "es", program: "evening", plusOne: false },
-  // { first: "Name",  last: "Surname", lang: "fr", program: "full", plusOne: true },
+  { first: "Eva",  last: "Berges", lang: "es", program: "evening", plusOne: false },
+  { first: "Tanguy",  last: "Masgnaux", lang: "fr", program: "full", plusOne: true },
 ];
 
 /* Programs shown on program.html, depending on the invitation.
