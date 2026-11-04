@@ -44,12 +44,27 @@
     });
   }
 
+  /* Program page: wedding date + venue address, which opens Google Maps */
+  function renderEvent() {
+    const dateEl = $("event-date"), place = $("event-place");
+    if (dateEl && typeof WEDDING !== "undefined") {
+      const locale = { en: "en-GB", es: "es-ES", fr: "fr-FR" }[lang] || lang;
+      const s = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(WEDDING);
+      dateEl.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+    }
+    if (place && typeof VENUE !== "undefined") {
+      $("event-address").textContent = VENUE.address;
+      place.href = VENUE.maps || "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(VENUE.address);
+      place.title = t("program.maps");
+    }
+  }
+
   function render() {
     document.documentElement.lang = lang;
     document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
     document.querySelectorAll("[data-i18n-ph]").forEach(el => el.placeholder = t(el.dataset.i18nPh));
     document.querySelectorAll("[data-i18n-aria]").forEach(el => el.setAttribute("aria-label", t(el.dataset.i18nAria)));
-    renderHeader(); renderProgram();
+    renderHeader(); renderProgram(); renderEvent();
     if (page !== "home") document.title = t("nav." + page) + " – Eva & Tanguy";
     if (guest && $("welcome")) $("welcome").textContent = t("welcome") + ", " + guest.first;
   }

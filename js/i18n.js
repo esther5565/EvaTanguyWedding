@@ -31,6 +31,7 @@ const I18N = {
     "moments.limit": "You can add up to {max} photos at a time.",
     "moments.limitLeft": "Thank you! Only {max} photos can be added at a time. Photos not added: {n}. Please select them again.",
     "faq.topics": "Topics",
+    "program.maps": "Open in Google Maps",
   },
   es: {
     "nav.rsvp": "RSVP", "nav.program": "Programa", "nav.qa": "Preguntas frecuentes", "nav.moments": "Momentos", "nav.about-us": "Sobre nosotros",
@@ -63,6 +64,7 @@ const I18N = {
     "moments.limit": "Puedes añadir hasta {max} fotos a la vez.",
     "moments.limitLeft": "¡Gracias! Solo se pueden añadir {max} fotos a la vez. Fotos sin añadir: {n}. Vuelve a seleccionarlas.",
     "faq.topics": "Temas",
+    "program.maps": "Abrir en Google Maps",
   },
   fr: {
     "nav.rsvp": "RSVP", "nav.program": "Programme", "nav.qa": "FAQ", "nav.moments": "Moments", "nav.about-us": "À propos de nous",
@@ -95,5 +97,6 @@ const I18N = {
     "moments.limit": "Vous pouvez ajouter jusqu’à {max} photos à la fois.",
     "moments.limitLeft": "Merci\u00a0! Seules {max} photos peuvent être ajoutées à la fois. Photos non ajoutées\u00a0: {n}. Veuillez les sélectionner à nouveau.",
     "faq.topics": "Thèmes",
+    "program.maps": "Ouvrir dans Google Maps",
   },
 };
