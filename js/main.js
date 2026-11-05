@@ -475,6 +475,69 @@
   }
   if (page === "qa") initFaq();
 
+  /* ---------- About us page ---------- */
+  function initAbout() {
+    const root = $("timeline");
+    if (!root || typeof ABOUT === "undefined") return;
+    const pick = o => (o && (o[lang] || o[DEFAULT_LANG])) || "";
+    const locale = { en: "en-GB", es: "es-ES", fr: "fr-FR" }[lang] || lang;
+    const hasDate = typeof WEDDING !== "undefined";
+    const dayMonth = hasDate ? new Intl.DateTimeFormat(locale, { day: "numeric", month: "long" }).format(WEDDING) : "";
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const midnight = new Date(); midnight.setHours(0, 0, 0, 0);
+    const days = (a, b) => Math.round((b - a) / 864e5);
+
+    function statValue(s) {
+      if (s.kind === "together") { const d = ABOUT.togetherSince; return d ? Math.max(0, days(new Date(d[0], d[1] - 1, d[2]), midnight)) : "[N]"; }
+      if (s.kind === "daysToGo") return hasDate ? Math.max(0, days(midnight, WEDDING)) : "[N]";
+      return s.value;
+    }
+    function countUp(el, to) {
+      const t0 = performance.now(), dur = Math.min(1600, 600 + to * 2);
+      const step = now => {
+        const k = Math.min(1, (now - t0) / dur);
+        el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))).toLocaleString(locale);
+        if (k < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+
+    if ($("about-intro")) $("about-intro").textContent = pick(ABOUT.intro);
+    if ($("about-end")) $("about-end").textContent = pick(ABOUT.end);
+
+    ABOUT.stops.forEach(st => {
+      const li = document.createElement("li"), main = document.createElement("div"), bubble = document.createElement("div");
+      const img = new Image(), h = document.createElement("h3"), p = document.createElement("p"), dot = document.createElement("span");
+      li.className = "stop"; main.className = "cell-main"; bubble.className = "bubble"; dot.className = "dot"; dot.setAttribute("aria-hidden", "true");
+      img.className = "stop-photo"; img.src = st.photo; img.alt = pick(st.title); img.loading = "lazy"; img.decoding = "async";
+      h.className = "stop-title"; h.textContent = pick(st.title);
+      p.className = "stop-sub"; p.textContent = pick(st.text).replace("{date}", dayMonth);
+      bubble.append(h, p); main.append(img, bubble); li.append(main, dot);
+      if (st.stat) {
+        const cell = document.createElement("div"), pill = document.createElement("span"), n = document.createElement("b"), l = document.createElement("span");
+        const v = statValue(st.stat);
+        cell.className = "cell-stat"; pill.className = "stat";
+        n.textContent = typeof v === "number" ? v.toLocaleString(locale) : v;
+        if (typeof v === "number" && v > 1) n.dataset.to = v;           /* numbers that count up */
+        l.textContent = pick(st.stat.label);
+        pill.append(n, l); cell.append(pill); li.append(cell);
+      }
+      root.append(li);
+    });
+
+    /* Each stop fades in when scrolled to, and its number counts up */
+    const show = li => {
+      li.classList.add("in");
+      const n = li.querySelector("b[data-to]");
+      if (n && !reduce) countUp(n, +n.dataset.to);
+    };
+    if ("IntersectionObserver" in window && !reduce) {
+      const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { show(e.target); io.unobserve(e.target); } }), { threshold: .25 });
+      [...root.children].forEach(li => io.observe(li));
+    } else [...root.children].forEach(show);
+  }
+  if (page === "about-us") initAbout();
+
   /* ---------- Landing page only ---------- */
   const gate = $("gate"), site = $("site");
   if (!gate) return;
